@@ -1,5 +1,5 @@
 ---
-name: loki
+name: loki-investigator
 description: >
   LogQL syntax reference and tool-sequencing strategy for READ-ONLY log
   investigation during Kubernetes incident RCA. Covers stream selectors,
