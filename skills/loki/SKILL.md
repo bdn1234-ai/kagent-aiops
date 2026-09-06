@@ -17,6 +17,44 @@ Loki indexes only metadata (labels), not full log content — a tight label
 selector is always cheap; a broad line filter over a huge stream is not.
 Always narrow by label first, then filter lines.
 
+## Required parameters that are easy to get wrong
+
+- **`datasourceUid` is never `"default"` or guessed** — it must be the real
+  UID of the Loki datasource on this cluster. Call `list_datasources` (or
+  read the `datasource.uid` field from a `get_dashboard_panel_queries`
+  result) to obtain it before calling any tool that requires it. A wrong
+  UID fails loudly ("datasource not found"); do not retry with another
+  guessed value — look it up properly instead.
+- **Time parameters must be absolute RFC3339, never relative strings.**
+  `"now"` or `"now-1h"` will fail with a parse error — these tools do not
+  accept Grafana-style relative time syntax. Compute an actual timestamp,
+  e.g. `2026-09-06T09:00:00Z` for now and `2026-09-06T08:00:00Z` for one
+  hour ago. If the current time is not directly known, use a tool or
+  context value that provides it rather than guessing a plausible-looking
+  timestamp.
+
+### Worked example — correct vs. incorrect tool call
+
+Question: *"Did app=grafana log any errors in the last hour?"*
+
+**Wrong** (guessed UID, relative time — will fail):
+```json
+{"datasourceUid": "default", "startRfc3339": "now-1h", "endRfc3339": "now", "labelName": "app"}
+```
+
+**Correct** (look up the UID first, compute absolute timestamps):
+```
+Step 1 → call list_datasources
+       → result includes {"uid": "loki-monitoring", "type": "loki", ...}
+Step 2 → compute current time as an absolute RFC3339 timestamp, e.g.
+         end = "2026-09-06T09:00:00Z", start = "2026-09-06T08:00:00Z"
+Step 3 → call list_loki_label_values with:
+{"datasourceUid": "loki-monitoring", "labelName": "app",
+ "startRfc3339": "2026-09-06T08:00:00Z", "endRfc3339": "2026-09-06T09:00:00Z"}
+```
+Never skip Step 1 — an unresolved `datasourceUid` or a relative time string
+is the most common cause of tool call failure in this environment.
+
 ## Tool sequencing strategy (not covered by any single tool's own description)
 
 The available Loki tools are complementary, not interchangeable — use them
