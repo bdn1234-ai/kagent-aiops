@@ -1,0 +1,468 @@
+{
+  "__inputs": [
+    {
+      "name": "DS_ELASTICSEARCH",
+      "label": "Elasticsearch",
+      "description": "Elasticsearch datasource for logs",
+      "type": "datasource",
+      "pluginId": "elasticsearch",
+      "pluginName": "Elasticsearch"
+    }
+  ],
+  "__requires": [
+    { "type": "grafana", "id": "grafana", "name": "Grafana", "version": "10.0.0" },
+    { "type": "datasource", "id": "elasticsearch", "name": "Elasticsearch", "version": "1.0.0" },
+    { "type": "panel", "id": "timeseries", "name": "Time series", "version": "" },
+    { "type": "panel", "id": "stat", "name": "Stat", "version": "" },
+    { "type": "panel", "id": "bargauge", "name": "Bar gauge", "version": "" },
+    { "type": "panel", "id": "table", "name": "Table", "version": "" },
+    { "type": "panel", "id": "logs", "name": "Logs", "version": "" },
+    { "type": "panel", "id": "piechart", "name": "Pie chart", "version": "" }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": { "type": "grafana", "uid": "-- Grafana --" },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Logs overview for Google Online Boutique services via Elasticsearch (Fluent Bit). Filter by $service_name.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 100,
+      "title": "🔍 Log Health Summary",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null } ] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 1 },
+      "id": 1,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Total Log Lines",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\"",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 100 } ] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 1 },
+      "id": 2,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Error Log Lines",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:error OR message:fail OR message:exception OR message:panic OR message:fatal)",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 50 } ] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 1 },
+      "id": 3,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "Timeout / Connection Errors",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:timeout OR message:\"connection refused\" OR message:\"connection reset\" OR message:\"deadline exceeded\")",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "red", "value": 1 } ] },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 4, "w": 6, "x": 18, "y": 1 },
+      "id": 4,
+      "options": { "colorMode": "background", "graphMode": "area", "justifyMode": "auto", "orientation": "auto", "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false }, "textMode": "auto" },
+      "title": "OOMKilled / Panic",
+      "type": "stat",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:OOMKilled OR message:panic OR message:\"out of memory\")",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 5 },
+      "id": 200,
+      "title": "📊 Log Volume Over Time",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "scheme", "lineWidth": 1, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 6 },
+      "id": 10,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "All Log Volume",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\"",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "field": "@timestamp",
+              "id": "2",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "scheme", "lineWidth": 1, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 14 },
+      "id": 11,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Error / Warning Logs Over Time",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:error OR message:fail OR message:exception OR message:panic OR message:fatal OR log.level:(error OR warn OR warning OR fatal))",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "field": "@timestamp",
+              "id": "2",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "axisCenteredZero": false, "drawStyle": "bars", "fillOpacity": 80, "gradientMode": "scheme", "lineWidth": 1, "showPoints": "never", "spanNulls": false, "stacking": { "group": "A", "mode": "normal" } }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 14 },
+      "id": 12,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom", "calcs": ["sum"] }, "tooltip": { "mode": "multi" } },
+      "title": "Timeout / Connection Errors Over Time",
+      "type": "timeseries",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:timeout OR message:\"connection refused\" OR message:\"connection reset\" OR message:\"deadline exceeded\" OR message:\"unavailable\")",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [
+            {
+              "type": "date_histogram",
+              "field": "@timestamp",
+              "id": "2",
+              "settings": { "interval": "auto" }
+            }
+          ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 22 },
+      "id": 300,
+      "title": "📋 Error Patterns & Breakdown",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 10 }, { "color": "red", "value": 100 } ] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 0, "y": 23 },
+      "id": 20,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "title": "Top Error Messages",
+      "type": "bargauge",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:error OR message:fail OR message:exception OR message:timeout OR message:panic OR message:fatal)",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "field": "message.keyword",
+              "id": "2",
+              "settings": { "size": "15", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 12, "x": 12, "y": 23 },
+      "id": 21,
+      "options": {
+        "legend": { "displayMode": "table", "placement": "right", "values": ["value", "percent"] },
+        "pieType": "donut",
+        "reduceOptions": { "calcs": ["sum"], "fields": "", "values": false },
+        "tooltip": { "mode": "multi" }
+      },
+      "title": "Error Distribution by Pod",
+      "type": "piechart",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:error OR message:fail OR message:exception OR message:timeout OR message:panic)",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "field": "kubernetes.pod_name.keyword",
+              "id": "2",
+              "settings": { "size": "10", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "thresholds" },
+          "thresholds": { "mode": "absolute", "steps": [ { "color": "green", "value": null }, { "color": "yellow", "value": 5 }, { "color": "red", "value": 50 } ] }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 32 },
+      "id": 22,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": { "calcs": ["lastNotNull"], "fields": "", "values": false },
+        "showUnfilled": true
+      },
+      "title": "Error Keywords by Container",
+      "type": "bargauge",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:error OR message:fail OR message:exception OR message:timeout OR message:panic OR message:\"connection refused\" OR message:OOMKilled)",
+          "metrics": [ { "type": "count", "id": "1" } ],
+          "bucketAggs": [
+            {
+              "type": "terms",
+              "field": "kubernetes.container_name.keyword",
+              "id": "2",
+              "settings": { "size": "10", "order": "desc", "orderBy": "_count" }
+            }
+          ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 41 },
+      "id": 400,
+      "title": "📜 Raw Logs",
+      "type": "row"
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 42 },
+      "id": 30,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "Error Logs (Raw)",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\" AND (message:error OR message:fail OR message:exception OR message:timeout OR message:panic OR message:fatal)",
+          "metrics": [ { "type": "logs", "id": "1", "settings": { "limit": "100" } } ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    },
+    {
+      "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 54 },
+      "id": 31,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "title": "All Logs (Raw)",
+      "type": "logs",
+      "targets": [
+        {
+          "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+          "query": "kubernetes.labels.app:\"$service_name\"",
+          "metrics": [ { "type": "logs", "id": "1", "settings": { "limit": "100" } } ],
+          "refId": "A",
+          "timeField": "@timestamp"
+        }
+      ]
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["google-boutique", "rca", "aiops", "kagent", "logs-overview"],
+  "templating": {
+    "list": [
+      {
+        "current": {},
+        "datasource": { "type": "elasticsearch", "uid": "${DS_ELASTICSEARCH}" },
+        "definition": "",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Service",
+        "multi": false,
+        "name": "service_name",
+        "options": [],
+        "query": "{ \"find\": \"terms\", \"field\": \"kubernetes.labels.app.keyword\" }",
+        "refresh": 2,
+        "regex": "/(adservice|cartservice|checkoutservice|currencyservice|emailservice|frontend|loadgenerator|paymentservice|productcatalogservice|recommendationservice|redis-cart|shippingservice)/",
+        "sort": 1,
+        "type": "query"
+      }
+    ]
+  },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Google Online Boutique — Logs Overview",
+  "uid": "logs-overview",
+  "version": 1,
+  "weekStart": ""
+}
